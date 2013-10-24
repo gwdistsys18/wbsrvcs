@@ -11,7 +11,7 @@
 *
 *	Expects URLs like:
 	"http://localhost/wbsrvcs/wbsrvcs.php?hop=1&h1name=frontend&h1comp=5&h1write=1&h2name=backend&h2comp=10&h2write=2&"
-	
+
 *	Single server example - 5 computation loops and 2 DB inserts:
 	"http://localhost/wbsrvcs/wbsrvcs.php?hop=1&h1name=frontend&h1comp=5&h1write=2"
 
@@ -32,6 +32,9 @@ $dbHost="localhost";
 $dbUser="wbsrvcs";
 $dbPass="wbsrvcs";
 $dbName="wbsrvcs";
+$numRecords = 10000;
+
+$useUpdates = false; // SET TO TRUE if you want to do DB updates instead of writes.
 
 if($_GET["cmd"] == "setup"){
 	echo "<p>Setting up database...</p>";
@@ -43,16 +46,24 @@ if($_GET["cmd"] == "setup"){
 	mysql_query("DROP TABLE IF EXISTS " . $dbName)
 		or die(mysql_error());
 	echo "<p>Creating empty table...</p>";
-	mysql_query("CREATE TABLE " . $dbName . " (id INT NOT NULL AUTO_INCREMENT, 
+	mysql_query("CREATE TABLE " . $dbName . " (id INT NOT NULL AUTO_INCREMENT,
 		PRIMARY KEY(id), data BLOB) ENGINE=InnoDB")
 		or die(mysql_error());
+
+
+	for ($i=1; $i <= $numRecords; $i++) {
+
+		mysql_query("INSERT INTO " . $dbName . " (data)
+                        VALUES(" . $i . " ) ")
+                        or die(mysql_error());
+	}
 	echo "<p>Finished setting up database!</p>";
 	exit();
 }
 
 // Read in computation and writes to perform at each tier
 
-if(empty($_GET["hop"])) 
+if(empty($_GET["hop"]))
 {
 	$hop=1;
 }
@@ -92,7 +103,7 @@ $hop+=1;
 $query="hop=" . $hop . "&";
 for ($i=1; $i < $maxHosts; $i++)
 {
-	if(empty($names[$i])) 
+	if(empty($names[$i]))
 	{
 		break;
 	}
@@ -126,7 +137,7 @@ if($writes[0] > 0)
 	echo "\n<p>Connected to MySQL...";
 	mysql_select_db($dbName) or die(mysql_error());
 	echo "\nConnected to Database</p>";
-	
+
 	/* TODO: Should change this code so we can insert a variable amount of data
 		into the Database.  The data column is of type BLOB, so it can store ~64KB
 		of data. Right now we just insert a small number.
@@ -134,12 +145,21 @@ if($writes[0] > 0)
 
 	for($i=0; $i < $writes[0]; $i++)
 	{
-		mysql_query("INSERT INTO " . $dbName . " (data)
-			VALUES(" . $hop . " - " . $i . " ) ") 
-			or die(mysql_error());  
+		if(!$useUpdates) {
+			mysql_query("INSERT INTO " . $dbName . " (data)
+				VALUES(" . $hop . " - " . $i . " ) ")
+				or die(mysql_error());
+		}
+		else {
+			$randID=rand(1,$numRecords);
+			mysql_query("UPDATE " . $dbName . " SET
+                                data= " . $hop . " - " . $i . "
+				WHERE id=$randID ")
+                                or die(mysql_error());
+		}
 	}
 	$timer = endTimer($timer);
-	
+
 	echo "\n<p>DB Write time: " . $timer . " seconds.</p>";
 }
 
@@ -150,11 +170,8 @@ if($comps[0] > 0)
 	$timer = startTimer();
 	loop($comps[0]);
 	$timer = endTimer($timer);
-	
+
 	echo "\n<p>Local Computation time: " . $timer . " seconds.</p>";
 }
 
 ?>
-
-</html>
-</body>
