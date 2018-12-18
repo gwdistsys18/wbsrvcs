@@ -10,6 +10,29 @@ def curl_request(req):
     out = subprocess.check_output(["curl", req])
     print(out)
 
+def run_test():
+    print(BASE_URL[7:])
+    topology_file = 'sample_top.json'
+
+    with open('sample_top.json', 'r') as f:
+        hosts = json.load(f)
+
+    request_url = BASE_URL + "/wbsrvcs/wbsrvcs.php"
+    request_url = request_url + "?hop=" + str(len(hosts))
+    h = 1
+    print(request_url)
+
+#"192.168.246.102/wbsrvcs/wbsrvcs.php?hop=1&h1name=frontend&h1comp=5&h2name=192.168.246.101&h2comp=10&hwrite2=1"
+
+    for key, value in hosts.items():
+        request_url = request_url + "&h" + str(h) + "name=" + BASE_URL[7:] + ":" + str(value['port'])
+        if 'comp' in value:
+            request_url = request_url + "&h" + str(h) + "comp=" + str(value['comp'])
+        h = h + 1
+    print(request_url)
+    curl_request(request_url)
+
+
 def create_containers():
     topology_file = 'sample_top.json'
 
@@ -40,6 +63,7 @@ def delete_containers():
 parser = argparse.ArgumentParser(description='Control script for a topology file')
 parser.add_argument('-c', action='store_true')
 parser.add_argument('-d', action='store_true')
+parser.add_argument('-t', action='store_true')
 
 args = parser.parse_args()
 selected_options = vars(args)
@@ -49,3 +73,6 @@ if selected_options['d']:
 
 if selected_options['c']:
     create_containers()
+
+if selected_options['t']:
+    run_test()
