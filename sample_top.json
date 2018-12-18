@@ -1,0 +1,20 @@
+{
+	"rogue_one": {
+		"port":80,
+		"forward": 8000,
+		"comp": 100
+	},
+
+	"rogue_two": {
+		"port": 8000,
+		"comp": 5000,
+		"insert": 200,
+		"forward": 8001
+	},
+
+	"rogue_three": {
+		"port": 8001,
+		"comp": 6000,
+		"insert": 100
+	}
+}
