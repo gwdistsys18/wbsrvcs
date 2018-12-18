@@ -3,12 +3,14 @@ import json
 import argparse
 import subprocess
 import time
+from bs4 import BeautifulSoup
 
 BASE_URL="http://ec2-3-81-10-227.compute-1.amazonaws.com"
 client = docker.from_env()
 def curl_request(req):
     out = subprocess.check_output(["curl", req])
     print(out)
+    return out
 
 def run_test():
     print(BASE_URL[7:])
@@ -30,7 +32,10 @@ def run_test():
             request_url = request_url + "&h" + str(h) + "comp=" + str(value['comp'])
         h = h + 1
     print(request_url)
-    curl_request(request_url)
+    html_output = curl_request(request_url)
+
+    soup = BeautifulSoup(html_output, 'html.parser')
+    print(soup.get_text())
 
 
 def create_containers():
