@@ -8,7 +8,7 @@ RUN apt-get upgrade -y
 RUN apt-get install -y zip unzip python-software-properties
 RUN apt-get install -y apache2 mysql-server
 
-RUN apt-get install -y php5-mysql php5 libapache2-mod-php5 php5-mcrypt
+RUN apt-get install -y php5-mysql php5 php5-curl libapache2-mod-php5 php5-mcrypt
 
 COPY run-lamp.sh /usr/sbin
 COPY site/ /var/www/html
