@@ -1,32 +1,20 @@
-wbsrvcs
+wbsrvcs- Dockerized!
 =======
 
-This benchmark represents a fake website where you can control precisely how much processing and IO is performed for each request. It also supports chaining together multiple such websites, letting you emulate a multi-tier website with an arbitrary topology.
+This builds off of the original [wbsrvcs project](https://github.com/gwcloudlab/wbsrvcs), and adds docker support and a JSON topology map. Containers can be created and destroyed according to the JSON file, and requests can be sent in a chain through the hosts.
 
+### Interacting with the JSON file
+A sample topology is included in the `sample_top.json` file. To interact with a JSON file, use the `container_manager.py` file. Inside the file, change the BASE URL to whatever the physical host has as an address, and the JSON file to be the name of the file. 
 
-The wbsrvcs.php script  does all the work for the fake website. Depending on the parameters sent in the URL, it can do several things:
+### Installation and Usage:
+The python file has several dependencies:
+- `docker`: this is a library that provides python bindings for interacting with docker.
+- `beautifulsoup`: Parses output
+- This file also uses python3
 
- - Perform writes to the local mysql database
- - Perform computation (calculates Fibonacci sequences)
- - Make a request to one or more other servers that are running the same script (not described here)
+Running:
+- `python3 container_manager.py -c`: creates a series of containers according to the JSON file
+- `python3 container_manager.py -d`: deletes containers specified in the JSON file
+- `python3 container_manager.py -t`: Send a request to the containers
 
-For example, to have the website perform 15 computational oops and 5 DB inserts on each request, you could run:
-
-lynx "localhost/wbsrvcs/wbsrvcs.php?hop=1&h1name=frontend&h1comp=15&h1write=5"
-
-This will give output like:
-```
-   Last query in chain!
-
-   Performing 5 DB inserts.
-
-   Connected to MySQL... Connected to Database
-
-   DB Write time: 0.0074570178985596 seconds.
-
-   Performing 15 computational loops.
-
-   Local Computation time: 0.028260946273804 seconds.
-```
-which tells you how long each of the operations took.
-
+The bash script, `create_lamp_container.sh`, creates a docker container with whatever port is passed as the subsequent argument.
